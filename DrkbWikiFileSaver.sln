@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrkbWikiFileSaver.Presentation", "DrkbWikiFileSaver.Presentation\DrkbWikiFileSaver.Presentation.csproj", "{2C34D95C-DD30-4ED0-87C9-F5923D13D1A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrkbWikiFileSaver.Domain", "DrkbWikiFileSaver.Domain\DrkbWikiFileSaver.Domain.csproj", "{7B8CDF66-6702-45E7-B09A-6510DCF04F41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrkbWikiFileSaver.Application", "DrkbWikiFileSaver.Application\DrkbWikiFileSaver.Application.csproj", "{12A443E0-8FE9-40CF-8187-2E791A843F18}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DrkbWikiFileSaver.Infrastructure", "DrkbWikiFileSaver.Infrastructure\DrkbWikiFileSaver.Infrastructure.csproj", "{F27A1D1F-021B-4DB2-A632-E5C3AC2D417F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2C34D95C-DD30-4ED0-87C9-F5923D13D1A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C34D95C-DD30-4ED0-87C9-F5923D13D1A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C34D95C-DD30-4ED0-87C9-F5923D13D1A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C34D95C-DD30-4ED0-87C9-F5923D13D1A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B8CDF66-6702-45E7-B09A-6510DCF04F41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B8CDF66-6702-45E7-B09A-6510DCF04F41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B8CDF66-6702-45E7-B09A-6510DCF04F41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B8CDF66-6702-45E7-B09A-6510DCF04F41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12A443E0-8FE9-40CF-8187-2E791A843F18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12A443E0-8FE9-40CF-8187-2E791A843F18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12A443E0-8FE9-40CF-8187-2E791A843F18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12A443E0-8FE9-40CF-8187-2E791A843F18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F27A1D1F-021B-4DB2-A632-E5C3AC2D417F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F27A1D1F-021B-4DB2-A632-E5C3AC2D417F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F27A1D1F-021B-4DB2-A632-E5C3AC2D417F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F27A1D1F-021B-4DB2-A632-E5C3AC2D417F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
