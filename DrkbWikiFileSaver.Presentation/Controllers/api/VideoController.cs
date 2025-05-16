@@ -1,4 +1,5 @@
 ﻿using DrkbWikiFileSaver.Application.UseCases;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DrkbWikiFileSaver.Controllers.api;
@@ -7,15 +8,11 @@ namespace DrkbWikiFileSaver.Controllers.api;
 public class VideoController : Controller
 {
     private readonly SaveVideoHandler _videoHandler;
-
-    public VideoController(SaveVideoHandler videoHandler)
+    private readonly IMediator _mediator;
+    public VideoController(SaveVideoHandler videoHandler, IMediator mediator)
     {
         _videoHandler = videoHandler;
-    }
-
-    public IActionResult GetAll()
-    {
-        return Ok();
+        _mediator = mediator;
     }
 
     [HttpPost("save")]
@@ -25,11 +22,11 @@ public class VideoController : Controller
         {
             return BadRequest("Файл не был загружен.");
         }
-        
-        _videoHandler.Handle(new SaveVideoCommand());
-        
+
         using var memoryStream = new MemoryStream();
         await video.CopyToAsync(memoryStream);
+        
+        var result = await _mediator.Send(new SaveVideoCommand(video.FileName, memoryStream.ToArray()));
         
         return Ok();
     }

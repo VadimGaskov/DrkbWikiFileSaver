@@ -1,6 +1,5 @@
 ﻿namespace DrkbWikiFileSaver.Application.Interfaces;
 
-public interface IServiceManager
+public interface IHandler<T> where T : class
 {
-    
 }

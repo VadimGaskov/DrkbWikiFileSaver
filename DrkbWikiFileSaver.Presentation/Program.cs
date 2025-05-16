@@ -1,15 +1,57 @@
+using System.Reflection;
 using System.Text.Json.Serialization;
 using DrkbWikiFileSaver.Application.Interfaces;
+using DrkbWikiFileSaver.Application.Interfaces.Configurations;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Infrastructure;
+using DrkbWikiFileSaver.Infrastructure.Configuration;
 using DrkbWikiFileSaver.Infrastructure.Data;
 using DrkbWikiFileSaver.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSwaggerGen(options =>
+{
+    //options.CustomSchemaIds(x => x.Name);
+
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "DrkbWikiFileSaver", Version = "v1" });
+
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    
+    OpenApiSecurityScheme securityDefinition = new OpenApiSecurityScheme()
+    {
+        Name = "Bearer",
+        BearerFormat = "JWT",
+        Scheme = "bearer",
+        Description = "Specify the authorization token.",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+    };
+
+    options.AddSecurityDefinition("jwt_auth", securityDefinition);
+
+    OpenApiSecurityScheme securityScheme = new OpenApiSecurityScheme()
+    {
+        Reference = new OpenApiReference()
+        {
+            Id = "jwt_auth",
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+
+    OpenApiSecurityRequirement securityRequirements = new OpenApiSecurityRequirement()
+    {
+        {securityScheme, new string[] { }},
+    };
+
+    options.AddSecurityRequirement(securityRequirements);
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddJsonOptions(options =>
@@ -26,6 +68,14 @@ builder.Services.AddDbContext<DrkbWikiFileSaverContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IFileSaver, DirectoryFileSaver>();
+
+var applicationAssembly = AppDomain.CurrentDomain.GetAssemblies()
+    .FirstOrDefault(a => a.GetName().Name == "DrkbWikiFileSaver.Application");
+
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+});
 
 builder.Services.AddCors(options =>
 {
@@ -48,7 +98,20 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.Limits.MaxRequestBodySize = 1_500 * 1024 * 1024; // 1.5 ГБ
 });
 
+builder.Services.Configure<VideoSettings>(builder.Configuration.GetSection("VideoSettings"));
+builder.Services.AddTransient<IVideoConfiguration, VideoConfiguration>();
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger()
+        .UseSwaggerUI(options =>
+        {
+            options.SwaggerEndpoint("/swagger/v1/swagger.json", "DrkbWiki.Presentation");
+            options.RoutePrefix = string.Empty;
+        });
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
