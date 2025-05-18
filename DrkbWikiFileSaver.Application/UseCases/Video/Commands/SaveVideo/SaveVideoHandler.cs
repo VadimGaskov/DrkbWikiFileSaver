@@ -1,14 +1,12 @@
-﻿using System.Net;
-using DrkbWikiFileSaver.Application.Interfaces;
+﻿using DrkbWikiFileSaver.Application.Interfaces;
 using DrkbWikiFileSaver.Application.Interfaces.Configurations;
-using DrkbWikiFileSaver.Domain.Entities;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Domain.Utils;
 using MediatR;
 
-namespace DrkbWikiFileSaver.Application.UseCases;
+namespace DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 
-public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result>
+public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVideoResultDto>>
 {
     private readonly IFileSaver _fileSaver;
     private readonly IUnitOfWork _unitOfWork;
@@ -20,7 +18,7 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result>
         _videoConfiguration = videoConfiguration;
     }
 
-    public async Task<Result> Handle(SaveVideoCommand request, CancellationToken cancellationToken)
+    public async Task<Result<SaveVideoResultDto>> Handle(SaveVideoCommand request, CancellationToken cancellationToken)
     {
         var currentDirectory = Directory.GetCurrentDirectory();
         var uploadDirectory = Path.Combine(currentDirectory, "Upload"); 
@@ -39,21 +37,24 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result>
                 
             }
             
-            var video = new Video()
+            var video = new Domain.Entities.Video()
             {
                 Title = request.FileName,
                 Url = _videoConfiguration.Url + request.FileName,
+                FilePath = "_videoConfiguration.Path",
+                MimeType = "asd"
             };
 
             await _unitOfWork.Video.AddAsync(video);
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
-            return Result.Success();
+            //TODO подключить автомаппер
+            return Result<SaveVideoResultDto>.Success(new SaveVideoResultDto() {SavedVideoUrl = video.Url});
         }
         catch (Exception e)
         {
-            return Result.ServerError("Не удалось сохранить файл");
+            return Result<SaveVideoResultDto>.ServerError("Не удалось сохранить файл");
         }
     }
 }

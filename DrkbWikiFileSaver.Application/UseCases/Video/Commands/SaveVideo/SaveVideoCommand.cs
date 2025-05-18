@@ -1,10 +1,9 @@
-﻿using System.Windows.Input;
-using DrkbWikiFileSaver.Domain.Utils;
+﻿using DrkbWikiFileSaver.Domain.Utils;
 using MediatR;
 
-namespace DrkbWikiFileSaver.Application.UseCases;
+namespace DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 
-public class SaveVideoCommand : IRequest<Result>
+public class SaveVideoCommand : IRequest<Result<SaveVideoResultDto>>
 {
     public SaveVideoCommand(string fileName, byte[] content)
     {

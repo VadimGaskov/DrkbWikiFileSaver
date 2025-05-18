@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace DrkbWikiFileSaver.Infrastructure.Configuration;
 
+//Паттерн адаптер (Дружит один интерфейс с другим)
 public class VideoConfiguration : IVideoConfiguration
 {
     private readonly IOptionsMonitor<VideoSettings> _videoSettings;

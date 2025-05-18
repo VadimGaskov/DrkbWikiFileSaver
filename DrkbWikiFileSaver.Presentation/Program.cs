@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using DrkbWikiFileSaver.Application.Interfaces;
 using DrkbWikiFileSaver.Application.Interfaces.Configurations;
+using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Infrastructure;
 using DrkbWikiFileSaver.Infrastructure.Configuration;
@@ -74,7 +75,7 @@ var applicationAssembly = AppDomain.CurrentDomain.GetAssemblies()
 
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+    cfg.RegisterServicesFromAssembly(typeof(SaveVideoCommand).Assembly);
 });
 
 builder.Services.AddCors(options =>
@@ -90,12 +91,12 @@ builder.Services.AddCors(options =>
 //Увеличения лимита загрузки видео до 1.5гб
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 1_500 * 1024 * 1024; // 1.5 ГБ
+    options.MultipartBodyLengthLimit = 3L * 1024 * 1024 * 1024; // 3 ГБ
 });
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Limits.MaxRequestBodySize = 1_500 * 1024 * 1024; // 1.5 ГБ
+    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024; // 3 ГБ
 });
 
 builder.Services.Configure<VideoSettings>(builder.Configuration.GetSection("VideoSettings"));
