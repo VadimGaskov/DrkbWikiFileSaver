@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Amazon.S3;
 using DrkbWikiFileSaver.Application.Interfaces;
 using DrkbWikiFileSaver.Application.Interfaces.Configurations;
+using DrkbWikiFileSaver.Application.Mapper;
 using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Infrastructure;
@@ -12,10 +14,11 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
+IConfiguration Configuration = builder.Configuration;
 builder.Services.AddSwaggerGen(options =>
 {
     //options.CustomSchemaIds(x => x.Name);
@@ -101,6 +104,15 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 builder.Services.Configure<VideoSettings>(builder.Configuration.GetSection("VideoSettings"));
 builder.Services.AddTransient<IVideoConfiguration, VideoConfiguration>();
+//MAPPER
+builder.Services.AddAutoMapper(typeof(MapperSettings));
+
+//S3
+builder.Services.Configure<SelectelStorageConfiguration>(
+    builder.Configuration.GetSection("S3Storage"));
+builder.Services.AddSingleton<ISelectelStorageConfiguration>(sp =>
+    sp.GetRequiredService<IOptions<SelectelStorageConfiguration>>().Value);
+builder.Services.AddTransient<IObjectStorageService, UploadSelectel>();
 
 var app = builder.Build();
 
