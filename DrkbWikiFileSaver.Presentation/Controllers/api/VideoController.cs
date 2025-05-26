@@ -27,7 +27,7 @@ public class VideoController : Controller
         using var memoryStream = new MemoryStream();
         await video.CopyToAsync(memoryStream);
         
-        var result = await _mediator.Send(new SaveVideoCommand(video.FileName, memoryStream.ToArray()), cancellationToken);
+        var result = await _mediator.Send(new SaveVideoCommand(video.FileName, memoryStream.ToArray(), video.ContentType), cancellationToken);
         
         if(result.IsSuccess)
             return Ok(result.Data);

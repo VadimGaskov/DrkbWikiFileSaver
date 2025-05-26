@@ -43,13 +43,14 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
 
                 // Открываем поток для загрузки в объектное хранилище
                 await using var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read);
-
+                
+                //new name for file
+                var nameFile = Guid.NewGuid().ToString() + ".mp4";
                 // Задаём ключ объекта (например, имя файла)
-                string objectKey = request.FileName;
+                string objectKey = nameFile;
 
                 // Загружаем файл в хранилище
                 //await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, fileStream);
-
                 
                 try
                 {
@@ -64,7 +65,7 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
                 
                 var videoUpload = new Domain.Entities.Video()
                 {
-                    Title = request.FileName,
+                    Title = nameFile,
                     Url = _videoConfiguration.Url + request.FileName, // например, базовый URL + имя файла
                     FilePath = videoPath,  // сохраняем локальный путь
                     MimeType = "video/mp4" // желательно определить корректный MIME ??? надо ли?
