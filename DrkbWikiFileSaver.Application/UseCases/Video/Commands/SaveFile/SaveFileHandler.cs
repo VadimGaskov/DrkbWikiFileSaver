@@ -1,19 +1,19 @@
 ﻿using DrkbWikiFileSaver.Application.Interfaces;
 using DrkbWikiFileSaver.Application.Interfaces.Configurations;
+using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Domain.Utils;
-using MediatR;
 
-namespace DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
+namespace DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveFile;
 
-public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVideoResultDto>>
+public class SaveFileHandler
 {
     private readonly IFileSaver _fileSaver;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IVideoConfiguration _videoConfiguration;
     private readonly IObjectStorageService _objectStorageService;
     private readonly ISelectelStorageConfiguration _selectelConfig;
-    public SaveVideoHandler(IFileSaver fileSaver, IUnitOfWork unitOfWork, IVideoConfiguration videoConfiguration, IObjectStorageService objectStorageService, ISelectelStorageConfiguration selectelConfig)
+    public SaveFileHandler(IFileSaver fileSaver, IUnitOfWork unitOfWork, IVideoConfiguration videoConfiguration, IObjectStorageService objectStorageService, ISelectelStorageConfiguration selectelConfig)
     {
         _fileSaver = fileSaver;
         _unitOfWork = unitOfWork;
@@ -21,17 +21,18 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
         _objectStorageService = objectStorageService;
         _selectelConfig = selectelConfig;
     }
-
-    public async Task<Result<SaveVideoResultDto>> Handle(SaveVideoCommand request, CancellationToken cancellationToken)
+    
+    
+     public async Task<Result<SaveFileResponse>> Handle(SaveFileCommand request, CancellationToken cancellationToken)
     {
         var currentDirectory = Directory.GetCurrentDirectory();
         var uploadDirectory = Path.Combine(currentDirectory, "Upload");
-        var videoDirectory = Path.Combine(uploadDirectory, "Video");
+        var fileDirectory = Path.Combine(uploadDirectory, "File");
 
         // Убедимся, что папки существуют
-        Directory.CreateDirectory(videoDirectory);
+        Directory.CreateDirectory(fileDirectory);
 
-        var videoPath = Path.Combine(videoDirectory, request.FileName);
+        var videoPath = Path.Combine(fileDirectory, request.Title);
         
         try
         {
@@ -42,7 +43,8 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
                 await using var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read);
                 
                 //new name for file
-                var nameFile = Guid.NewGuid().ToString() + ".mp4";
+                var formatFile = request.ContentType;
+                var nameFile = Guid.NewGuid().ToString() + formatFile;
                 // Задаём ключ объекта (например, имя файла)
                 string objectKey = nameFile;
 
@@ -60,45 +62,43 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
                 
                 
                 
-                var videoUpload = new Domain.Entities.Video()
+                var fileUpload = new Domain.Entities.File()
                 {
                     Title = nameFile,
                     //TODO ПЕРЕДЕЛАТЬ НА НОРМАЛЬНЫЙ ПУТЬ
                     Url = "https://efed9ee2-8c7f-41ac-a003-3c21c6b97f6d.selstorage.ru" + "/" + nameFile, // например, базовый URL + имя файла
-                    FilePath = videoPath,  // сохраняем локальный путь
-                    MimeType = "video/mp4" 
+                    RelatedId = request.RelatedId,
                 };
 
-                await _unitOfWork.Video.AddAsync(videoUpload);
+                await _unitOfWork.File.AddAsync(fileUpload);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                return Result<SaveVideoResultDto>.Success(new SaveVideoResultDto() { SavedVideoUrl = videoUpload.Url });
+                return Result<SaveFileResponse>.Success(new SaveFileResponse() { SavedFileUrl = fileUpload.Url });
             }
             catch (Exception e)
             {
                 
             }
             
-            var video = new Domain.Entities.Video()
+            var file = new Domain.Entities.File()
             {
-                Title = request.FileName,
-                Url = _videoConfiguration.Url + request.FileName,
-                FilePath = "_videoConfiguration.Path",
-                MimeType = "asd"
+                Title = request.Title,
+                Url = _videoConfiguration.Url + request.Title,
+                RelatedId = request.RelatedId,
             };
 
-            await _unitOfWork.Video.AddAsync(video);
+            await _unitOfWork.File.AddAsync(file);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             //TODO подключить автомаппер
-            return Result<SaveVideoResultDto>.Success(new SaveVideoResultDto() {SavedVideoUrl = video.Url});
+            return Result<SaveFileResponse>.Success(new SaveFileResponse() {SavedFileUrl = file.Url});
         }
         catch (Exception e)
         {
-            return Result<SaveVideoResultDto>.ServerError("Не удалось сохранить файл");
+            return Result<SaveFileResponse>.ServerError("Не удалось сохранить файл");
         }
     }
     
-
+    
 }

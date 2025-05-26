@@ -104,6 +104,7 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 builder.Services.Configure<VideoSettings>(builder.Configuration.GetSection("VideoSettings"));
 builder.Services.AddTransient<IVideoConfiguration, VideoConfiguration>();
+
 //MAPPER
 builder.Services.AddAutoMapper(typeof(MapperSettings));
 
