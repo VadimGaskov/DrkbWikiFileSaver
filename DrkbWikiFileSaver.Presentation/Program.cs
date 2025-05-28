@@ -108,7 +108,7 @@ builder.Services.Configure<VideoSettings>(builder.Configuration.GetSection("Vide
 builder.Services.AddTransient<IVideoConfiguration, VideoConfiguration>();
 
 //MAPPER
-builder.Services.AddAutoMapper(typeof(MapperSettings));
+builder.Services.AddAutoMapper(typeof(Mapper));
 
 //S3
 builder.Services.Configure<SelectelStorageConfiguration>(

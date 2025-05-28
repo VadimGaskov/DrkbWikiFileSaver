@@ -17,7 +17,8 @@
 
     <ItemGroup>
       <Folder Include="DTOs\" />
-      <Folder Include="UseCases\Video\Queries\" />
+      <Folder Include="UseCases\File\Commands\" />
+      <Folder Include="UseCases\File\Queries\" />
     </ItemGroup>
 
 </Project>

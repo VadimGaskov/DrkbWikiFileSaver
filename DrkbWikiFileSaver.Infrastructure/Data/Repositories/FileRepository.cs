@@ -39,4 +39,9 @@ public class FileRepository : IFileRepository
     {
         _context.Files.Update(file);
     }
+
+    public async Task<List<File>> GetByIdRelatedAsync(Guid idRelated)
+    {
+        return await _context.Files.Where(x => x.RelatedId == idRelated).ToListAsync();
+    }
 }
