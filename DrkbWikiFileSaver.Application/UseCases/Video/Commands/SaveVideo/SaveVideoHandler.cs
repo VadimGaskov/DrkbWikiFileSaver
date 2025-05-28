@@ -24,18 +24,37 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
 
     public async Task<Result<SaveVideoResultDto>> Handle(SaveVideoCommand request, CancellationToken cancellationToken)
     {
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var uploadDirectory = Path.Combine(currentDirectory, "Upload");
+        var videoDirectory = Path.Combine(uploadDirectory, "Video");
+
+        // Убедимся, что папки существуют
+        Directory.CreateDirectory(videoDirectory);
+
+        var videoPath = Path.Combine(videoDirectory, request.FileName);
         
         try
         {
-            ///TODO Изменить переделать чтобы селектел отпралялся из IFormFile
+            ///TODO Изменить
             try
             {
-                var formatFile = request.MimeType.SplitMimeType();
-                var nameFile = Guid.NewGuid().ToString() + formatFile;
+                // Сохраняем файл локально
+                await _fileSaver.SaveFile(videoPath, request.Content);
+
+                // Открываем поток для загрузки в объектное хранилище
+                await using var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read);
+                
+                //new name for file
+                var nameFile = Guid.NewGuid().ToString() + ".mp4";
+                // Задаём ключ объекта (например, имя файла)
                 string objectKey = nameFile;
+
+                // Загружаем файл в хранилище
+                //await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, fileStream);
+                
                 try
                 {
-                    await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, request.Content);
+                    await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, fileStream);
                 }
                 catch (Exception ex)
                 {
@@ -47,10 +66,9 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
                 var videoUpload = new Domain.Entities.Video()
                 {
                     Title = nameFile,
-                    //TODO ПЕРЕДЕЛАТЬ НА НОРМАЛЬНЫЙ ПУТЬ
-                    Url = "https://efed9ee2-8c7f-41ac-a003-3c21c6b97f6d.selstorage.ru" + "/" + nameFile, // например, базовый URL + имя файла
-                    FilePath = "",  // сохраняем локальный путь
-                    MimeType = "video/mp4" 
+                    Url = _videoConfiguration.Url + request.FileName, // например, базовый URL + имя файла
+                    FilePath = videoPath,  // сохраняем локальный путь
+                    MimeType = "video/mp4" // желательно определить корректный MIME ??? надо ли?
                 };
 
                 await _unitOfWork.Video.AddAsync(videoUpload);
@@ -60,10 +78,23 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
             }
             catch (Exception e)
             {
-                return Result<SaveVideoResultDto>.ServerError("Не удалось сохранить файл");
-
+                
             }
             
+            var video = new Domain.Entities.Video()
+            {
+                Title = request.FileName,
+                Url = _videoConfiguration.Url + request.FileName,
+                FilePath = "_videoConfiguration.Path",
+                MimeType = "asd"
+            };
+
+            await _unitOfWork.Video.AddAsync(video);
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            
+            //TODO подключить автомаппер
+            return Result<SaveVideoResultDto>.Success(new SaveVideoResultDto() {SavedVideoUrl = video.Url});
         }
         catch (Exception e)
         {
