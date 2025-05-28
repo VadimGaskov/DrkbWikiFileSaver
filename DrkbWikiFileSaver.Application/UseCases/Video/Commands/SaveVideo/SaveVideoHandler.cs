@@ -38,23 +38,13 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
             ///TODO Изменить
             try
             {
-                // Сохраняем файл локально
-                await _fileSaver.SaveFile(videoPath, request.Content);
-
-                // Открываем поток для загрузки в объектное хранилище
-                await using var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read);
-                
-                //new name for file
-                var nameFile = Guid.NewGuid().ToString() + ".mp4";
-                // Задаём ключ объекта (например, имя файла)
+                var formatFile = request.MimeType.SplitMimeType();
+                var nameFile = Guid.NewGuid().ToString() + formatFile;
                 string objectKey = nameFile;
-
-                // Загружаем файл в хранилище
-                //await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, fileStream);
                 
                 try
                 {
-                    await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, fileStream);
+                    await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, request.Content);
                 }
                 catch (Exception ex)
                 {
@@ -78,23 +68,10 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
             }
             catch (Exception e)
             {
-                
+                return Result<SaveVideoResultDto>.ServerError("Не удалось сохранить файл");
             }
             
-            var video = new Domain.Entities.Video()
-            {
-                Title = request.FileName,
-                Url = _videoConfiguration.Url + request.FileName,
-                FilePath = "_videoConfiguration.Path",
-                MimeType = "asd"
-            };
-
-            await _unitOfWork.Video.AddAsync(video);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            //TODO подключить автомаппер
-            return Result<SaveVideoResultDto>.Success(new SaveVideoResultDto() {SavedVideoUrl = video.Url});
+          
         }
         catch (Exception e)
         {
