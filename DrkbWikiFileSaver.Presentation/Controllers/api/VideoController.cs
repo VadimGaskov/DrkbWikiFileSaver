@@ -30,34 +30,9 @@ public class VideoController : Controller
 
         var byteArray = memoryStream.ToArray();
         
+        var result = await _mediator.Send(new SaveVideoCommand(video.FileName, memoryStream, video.ContentType), cancellationToken);
         await memoryStream.DisposeAsync();
-        
-        var result = await _mediator.Send(new SaveVideoCommand(video.FileName, byteArray, video.ContentType), cancellationToken);
-        
-        if(result.IsSuccess)
-            return Ok(result.Data);
 
-        return StatusCode(result.StatusCode, result.Error);
-        
-    }
-    //TODO не правильный SaveFileCommand
-    [HttpPost("save-file")]
-    public async Task<IActionResult> SaveFile(Guid idRelated, IFormFile file, CancellationToken cancellationToken)
-    {
-        if (file.Length == 0 || file == null)
-        {
-            return BadRequest("Файл не был загружен.");
-        }
-        
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-
-        var byteArray = memoryStream.ToArray();
-        
-        await memoryStream.DisposeAsync();
-        
-        var result = await _mediator.Send(new SaveFileCommand(idRelated,file.FileName, byteArray, file.ContentType,file.ContentType), cancellationToken);
-        
         if(result.IsSuccess)
             return Ok(result.Data);
 

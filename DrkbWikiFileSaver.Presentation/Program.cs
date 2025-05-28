@@ -4,6 +4,7 @@ using Amazon.S3;
 using DrkbWikiFileSaver.Application.Interfaces;
 using DrkbWikiFileSaver.Application.Interfaces.Configurations;
 using DrkbWikiFileSaver.Application.Mapper;
+using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveFile;
 using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Infrastructure;
@@ -79,6 +80,7 @@ var applicationAssembly = AppDomain.CurrentDomain.GetAssemblies()
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(SaveVideoCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(SaveFileCommand).Assembly);
 });
 
 builder.Services.AddCors(options =>

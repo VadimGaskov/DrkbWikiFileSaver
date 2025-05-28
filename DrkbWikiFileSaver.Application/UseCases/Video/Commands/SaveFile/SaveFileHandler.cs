@@ -3,10 +3,11 @@ using DrkbWikiFileSaver.Application.Interfaces.Configurations;
 using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Domain.Utils;
+using MediatR;
 
 namespace DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveFile;
 
-public class SaveFileHandler
+public class SaveFileHandler : IRequestHandler<SaveFileCommand, Result<SaveFileResponse>>
 {
     private readonly IFileSaver _fileSaver;
     private readonly IUnitOfWork _unitOfWork;
@@ -25,35 +26,19 @@ public class SaveFileHandler
     
      public async Task<Result<SaveFileResponse>> Handle(SaveFileCommand request, CancellationToken cancellationToken)
     {
-        var currentDirectory = Directory.GetCurrentDirectory();
-        var uploadDirectory = Path.Combine(currentDirectory, "Upload");
-        var fileDirectory = Path.Combine(uploadDirectory, "File");
-
-        // Убедимся, что папки существуют
-        Directory.CreateDirectory(fileDirectory);
-
-        var videoPath = Path.Combine(fileDirectory, request.Title);
         
         try
         {
             ///TODO Изменить переделать чтобы селектел отпралялся из IFormFile
             try
             {
-                // Открываем поток для загрузки в объектное хранилище
-                await using var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read);
-                
-                //new name for file
-                var formatFile = request.ContentType;
+                var formatFile = request.MimeType.SplitMimeType();
                 var nameFile = Guid.NewGuid().ToString() + formatFile;
-                // Задаём ключ объекта (например, имя файла)
                 string objectKey = nameFile;
-
-                // Загружаем файл в хранилище
-                //await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, fileStream);
                 
                 try
                 {
-                    await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, fileStream);
+                    await _objectStorageService.UploadFileAsync(_selectelConfig.BucketName, objectKey, request.Content);
                 }
                 catch (Exception ex)
                 {
@@ -77,22 +62,9 @@ public class SaveFileHandler
             }
             catch (Exception e)
             {
-                
+                return Result<SaveFileResponse>.ServerError("Не удалось сохранить файл");
+
             }
-            
-            var file = new Domain.Entities.File()
-            {
-                Title = request.Title,
-                Url = _videoConfiguration.Url + request.Title,
-                RelatedId = request.RelatedId,
-            };
-
-            await _unitOfWork.File.AddAsync(file);
-
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            //TODO подключить автомаппер
-            return Result<SaveFileResponse>.Success(new SaveFileResponse() {SavedFileUrl = file.Url});
         }
         catch (Exception e)
         {

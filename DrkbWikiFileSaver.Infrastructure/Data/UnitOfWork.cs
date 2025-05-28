@@ -12,10 +12,9 @@ public class UnitOfWork : IUnitOfWork
     private VideoRepository? _videoRepository;
     private FileRepository? _fileRepository;
     
-    public UnitOfWork(DrkbWikiFileSaverContext context, FileRepository? fileRepository)
+    public UnitOfWork(DrkbWikiFileSaverContext context)
     {
         _context = context;
-        _fileRepository = fileRepository;
     }
     
     public IVideoRepository Video => _videoRepository ??= new VideoRepository(_context);
