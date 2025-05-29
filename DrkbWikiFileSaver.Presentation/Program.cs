@@ -1,7 +1,10 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Amazon.S3;
 using DrkbWikiFileSaver.Application.Interfaces;
 using DrkbWikiFileSaver.Application.Interfaces.Configurations;
+using DrkbWikiFileSaver.Application.Mapper;
+using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveFile;
 using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveVideo;
 using DrkbWikiFileSaver.Domain.Interfaces;
 using DrkbWikiFileSaver.Infrastructure;
@@ -12,10 +15,11 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
+IConfiguration Configuration = builder.Configuration;
 builder.Services.AddSwaggerGen(options =>
 {
     //options.CustomSchemaIds(x => x.Name);
@@ -76,6 +80,7 @@ var applicationAssembly = AppDomain.CurrentDomain.GetAssemblies()
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(SaveVideoCommand).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(SaveFileCommand).Assembly);
 });
 
 builder.Services.AddCors(options =>
@@ -94,13 +99,26 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 3L * 1024 * 1024 * 1024; // 3 ГБ
 });
 
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024; // 3 ГБ
-});
+
 
 builder.Services.Configure<VideoSettings>(builder.Configuration.GetSection("VideoSettings"));
 builder.Services.AddTransient<IVideoConfiguration, VideoConfiguration>();
+
+//MAPPER
+builder.Services.AddAutoMapper(typeof(Mapper));
+
+//S3
+builder.Services.Configure<SelectelStorageConfiguration>(
+    builder.Configuration.GetSection("S3Storage"));
+builder.Services.AddSingleton<ISelectelStorageConfiguration>(sp =>
+    sp.GetRequiredService<IOptions<SelectelStorageConfiguration>>().Value);
+builder.Services.AddTransient<IObjectStorageService, UploadSelectel>();
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5004); // Укажите нужный порт
+    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024; // 3 ГБ
+});
 
 var app = builder.Build();
 

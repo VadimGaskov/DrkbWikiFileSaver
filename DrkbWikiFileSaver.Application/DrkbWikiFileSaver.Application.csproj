@@ -11,13 +11,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="14.0.0" />
       <PackageReference Include="MediatR" Version="12.5.0" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="DTOs\" />
-      <Folder Include="UseCases\Video\Commands\" />
-      <Folder Include="UseCases\Video\Queries\" />
+      <Folder Include="UseCases\File\Queries\" />
     </ItemGroup>
 
 </Project>
