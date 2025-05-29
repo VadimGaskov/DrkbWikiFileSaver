@@ -1,11 +1,13 @@
 ﻿using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
+using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using DrkbWikiFileSaver.Application.Interfaces;
 using DrkbWikiFileSaver.Application.Interfaces.Configurations;
 
 namespace DrkbWikiFileSaver.Infrastructure.Services;
+
 
 public class UploadSelectel : IObjectStorageService
 {
@@ -31,5 +33,16 @@ public class UploadSelectel : IObjectStorageService
         var fileTransferUtility = new TransferUtility(_s3Client);
 
         await fileTransferUtility.UploadAsync(fileStream, bucketName, key);
+    }
+
+    public async Task RemoveFileAsync(string bucketName, string key)
+    {
+        var deleteRequest = new DeleteObjectRequest
+        {
+            BucketName = bucketName,
+            Key = key
+        };
+
+        await _s3Client.DeleteObjectAsync(deleteRequest);
     }
 }

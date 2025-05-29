@@ -1,4 +1,5 @@
-﻿using DrkbWikiFileSaver.Application.UseCases.File.GetFile;
+﻿using DrkbWikiFileSaver.Application.UseCases.File.Commands.UpdateFile;
+using DrkbWikiFileSaver.Application.UseCases.File.GetFile;
 using DrkbWikiFileSaver.Application.UseCases.File.RemoveFile;
 using DrkbWikiFileSaver.Application.UseCases.Video.Commands.SaveFile;
 using DrkbWikiFileSaver.Domain.Utils;
@@ -48,6 +49,27 @@ public class FileController : Controller
         }
         return StatusCode(result.StatusCode, result.Error);
     }
+    
+    
+    [HttpPost("update")]
+    public async Task<IActionResult> Update(Guid idFile, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0 || file == null)
+        {
+            return BadRequest("Файл не был загружен.");
+        }
+        
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        
+        var result = await _mediator.Send(new UpdateFileCommand(idFile, memoryStream, file.FileName, file.ContentType), cancellationToken);
+        await memoryStream.DisposeAsync();
+        if(result.IsSuccess)
+            return Ok(result.Data);
+
+        return StatusCode(result.StatusCode, result.Error);
+    }
+    
     
     [HttpGet("get-files")]
     public async  Task<ActionResult<List<GetFileResponse>>> GetFiles(Guid idRelated, CancellationToken cancellationToken)
