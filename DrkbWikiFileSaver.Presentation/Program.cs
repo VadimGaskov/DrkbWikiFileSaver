@@ -99,10 +99,7 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 3L * 1024 * 1024 * 1024; // 3 ГБ
 });
 
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024; // 3 ГБ
-});
+
 
 builder.Services.Configure<VideoSettings>(builder.Configuration.GetSection("VideoSettings"));
 builder.Services.AddTransient<IVideoConfiguration, VideoConfiguration>();
@@ -116,6 +113,12 @@ builder.Services.Configure<SelectelStorageConfiguration>(
 builder.Services.AddSingleton<ISelectelStorageConfiguration>(sp =>
     sp.GetRequiredService<IOptions<SelectelStorageConfiguration>>().Value);
 builder.Services.AddTransient<IObjectStorageService, UploadSelectel>();
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5004); // Укажите нужный порт
+    serverOptions.Limits.MaxRequestBodySize = 3L * 1024 * 1024 * 1024; // 3 ГБ
+});
 
 var app = builder.Build();
 
