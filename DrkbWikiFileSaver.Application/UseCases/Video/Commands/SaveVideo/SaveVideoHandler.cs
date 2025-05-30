@@ -56,7 +56,7 @@ public class SaveVideoHandler : IRequestHandler<SaveVideoCommand, Result<SaveVid
                 var videoUpload = new Domain.Entities.Video()
                 {
                     Title = nameFile,
-                    Url = _videoConfiguration.Url + request.FileName, // например, базовый URL + имя файла
+                    Url = _videoConfiguration.Url + objectKey, // например, базовый URL + имя файла
                     FilePath = videoPath,  // сохраняем локальный путь
                     MimeType = "video/mp4" // желательно определить корректный MIME ??? надо ли?
                 };
