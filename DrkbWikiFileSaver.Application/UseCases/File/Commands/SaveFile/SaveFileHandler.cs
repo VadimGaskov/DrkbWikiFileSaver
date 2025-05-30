@@ -26,14 +26,13 @@ public class SaveFileHandler : IRequestHandler<SaveFileCommand, Result<SaveFileR
     
      public async Task<Result<SaveFileResponse>> Handle(SaveFileCommand request, CancellationToken cancellationToken)
     {
-        
         try
         {
             ///TODO Изменить переделать чтобы селектел отпралялся из IFormFile
             try
             {
                 var formatFile = request.MimeType.SplitMimeType();
-                var nameFile = Guid.NewGuid().ToString() + formatFile;
+                var nameFile = Guid.NewGuid() + formatFile;
                 string objectKey = nameFile;
                 
                 try
@@ -42,14 +41,12 @@ public class SaveFileHandler : IRequestHandler<SaveFileCommand, Result<SaveFileR
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    return Result<SaveFileResponse>.ServerError("Не удалось сохранить файл");
                 }
-                
-                
                 
                 var fileUpload = new Domain.Entities.File()
                 {
-                    Title = nameFile,
+                    Title = request.RequestTitle ?? request.FileTitle,
                     //TODO ПЕРЕДЕЛАТЬ НА НОРМАЛЬНЫЙ ПУТЬ
                     Url = "https://efed9ee2-8c7f-41ac-a003-3c21c6b97f6d.selstorage.ru" + "/" + nameFile, // например, базовый URL + имя файла
                     RelatedId = request.RelatedId,
@@ -58,12 +55,11 @@ public class SaveFileHandler : IRequestHandler<SaveFileCommand, Result<SaveFileR
                 await _unitOfWork.File.AddAsync(fileUpload);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                return Result<SaveFileResponse>.Success(new SaveFileResponse() { SavedFileUrl = fileUpload.Url });
+                return Result<SaveFileResponse>.Success(new SaveFileResponse() { SavedFileUrl = fileUpload.Url, Title = fileUpload.Title, Id = fileUpload.Id.ToString()});
             }
             catch (Exception e)
             {
                 return Result<SaveFileResponse>.ServerError("Не удалось сохранить файл");
-
             }
         }
         catch (Exception e)

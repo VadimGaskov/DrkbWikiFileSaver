@@ -16,7 +16,7 @@ public class FileController : Controller
         _mediator = mediator;
     }
     [HttpPost("save")]
-    public async Task<IActionResult> SaveFile(Guid idRelated, IFormFile file, CancellationToken cancellationToken)
+    public async Task<IActionResult> SaveFile(Guid idRelated, IFormFile file, CancellationToken cancellationToken, string? title = null)
     {
         if (file.Length == 0 || file == null)
         {
@@ -24,10 +24,13 @@ public class FileController : Controller
         }
         
         using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
         
-        var result = await _mediator.Send(new SaveFileCommand(idRelated,file.FileName, memoryStream, file.ContentType), cancellationToken);
+        await file.CopyToAsync(memoryStream, cancellationToken);
+        
+        var result = await _mediator.Send(new SaveFileCommand(idRelated,file.FileName, memoryStream, file.ContentType, title), cancellationToken);
+        
         await memoryStream.DisposeAsync();
+        
         if(result.IsSuccess)
             return Ok(result.Data);
 
